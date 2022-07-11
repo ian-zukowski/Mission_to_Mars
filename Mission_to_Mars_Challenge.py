@@ -4,7 +4,7 @@ from bs4 import BeautifulSoup as soup
 from webdriver_manager.chrome import ChromeDriverManager
 
 import pandas as pd
-import numpy as np
+import datetime as dt
 
 executable_path = {'executable_path': ChromeDriverManager().install()}
 browser = Browser('chrome', **executable_path, headless=False)

@@ -19,7 +19,7 @@ def scrape_all():
       "news_paragraph": news_paragraph,
       "featured_image": featured_image(browser),
       "facts": mars_facts(),
-      "url": hemispheres,
+      "hemispheres": hemispheres(browser),
       "last_modified": dt.datetime.now()
     }
 
@@ -110,45 +110,29 @@ def mars_facts():
     return df.to_html(classes='table table-striped')
 
 def hemispheres(browser):
-    # 1. Use browser to visit the URL 
     url = 'https://marshemispheres.com/'
 
     browser.visit(url)
 
-    # 2. Create a list to hold the images and titles.
-    hemisphere_urls_layer1 = []
     hemisphere_image_urls = []
-    hemispheres = {}
 
-    # 3. Write code to retrieve the image urls and titles for each hemisphere.
     html = browser.html
     hemisphere_soup = soup(html, 'html.parser')
-    hemi_urls = hemisphere_soup.find_all('a', class_='itemLink product-item')
+    hemi_urls = browser.find_by_css('a.product-item img')
 
-    for item in hemi_urls:
-        hemi_rel_url = item.get('href')
-        hemi_img_url = f'https://marshemispheres.com/{hemi_rel_url}'
-        if hemi_img_url not in hemisphere_urls_layer1:
-            hemisphere_urls_layer1.append(hemi_img_url)
+    for i in range(len(hemi_urls)):
+        hemispheres = {}
+        browser.find_by_css('a.product-item img')[i].click()
+        sample_elem = browser.links.find_by_text('Sample').first
+        hemispheres['img_url'] = sample_elem['href']
+        hemispheres['title']= browser.find_by_css('h2.title').text
+        hemisphere_image_urls.append(hemispheres)
+        
+        browser.back()
 
-    for link in hemisphere_urls_layer1:
-        url = link
-        browser.visit(url)
-        html = browser.html
-        hemisphere_soup_layer2 = soup(html, 'html.parser')
-        try:
-            hemi2_title = hemisphere_soup_layer2.find('h2', class_='title').get_text()
-            hemi2_urls = hemisphere_soup_layer2.find('li')
-            hemi2_box = hemi2_urls.find_all('a')
-            for item in hemi2_box:
-                hemi2_rel_url = item.get('href')
-                hemi2_full_url = f'https://marshemispheres.com/{hemi2_rel_url}'
-                hemispheres["img_url"]=hemi2_full_url
-                hemispheres["title"]=hemi2_title
-            print(hemispheres)
-            hemisphere_image_urls.append(hemispheres)
-        except:
-            pass
+    browser.quit()
+
+    return hemisphere_image_urls
 
 if __name__ == "__main__":
     # If running as script, print scraped data
